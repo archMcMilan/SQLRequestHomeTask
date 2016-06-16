@@ -1,5 +1,3 @@
--- select n_header as header,min(n_dt) as date from news group by n_id having n_header is not null; 
--- select n_header as header,min(datediff(now(),n_dt)) from news having min(datediff(now(),n_dt)) group by n_header;
 
 -- 1.
 Select count(n_id)+(Select count(r_id) from reviews) as Sum from news;
@@ -92,10 +90,45 @@ select b_id,b_url,(b_click/b_show) as rate from banners
 	where b_pic is not null order by (b_click/b_show) desc;
 
 -- 20.
-
+select n_header,n_dt as date from news,reviews where n_dt in
+	(select min(n_dt) from news) and  
+		r_dt in (select min(r_dt) from reviews);
 -- 21.
 select b_url,b_id from banners where b_url in 
 	(select b_url from banners group by b_url having count(b_id) = 1);
 
-22.
+-- 22.
+select p_name,count(b_id) from pages,m2m_banners_pages
+	where pages.p_id= m2m_banners_pages.p_id
+		group by p_name
+			order by count(b_id) desc,p_name;
 
+-- 23.
+
+-- 24.
+select b_id,b_url,b_text from banners where concat('http://','',b_text)=b_url; 
+
+-- 25. 
+select p_name from pages,m2m_banners_pages,banners
+	where pages.p_id=m2m_banners_pages.p_id and 
+		m2m_banners_pages.b_id=banners.b_id and
+			(b_click/b_show) in 
+				(select max(b_click/b_show) as rate from banners);
+
+-- 26.
+select avg(b_click/b_show) from banners where b_show>0;
+
+-- 27.
+select avg(b_click/b_show) from banners where b_show>0 and b_pic is null;
+
+-- 28.
+select count(banners.b_id) from banners,m2m_banners_pages,pages 
+	where banners.b_id=m2m_banners_pages.b_id and
+		m2m_banners_pages.p_id=pages.p_id and
+			p_parent is null;
+
+-- 29.
+        
+select m2m_banners_pages.b_id,b_url,count(m2m_banners_pages.b_id) from m2m_banners_pages,banners
+	where count(m2m_banners_pages.b_id) in
+		(select max(m2m_banners_pages.b_id) from m2m_banners_pages) group by m2m_banners_pages.b_id;
