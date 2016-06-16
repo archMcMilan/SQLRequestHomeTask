@@ -114,7 +114,7 @@ select n_header,n_dt as date from news where n_dt in
 
 
 -- 24.
-select b_id,b_url,b_text from banners where concat('http://','',b_text)=b_url; 
+select b_id,b_url,b_text from banners where locate(b_text,b_url)>0; 
 
 -- 25. 
 select p_name from pages,m2m_banners_pages,banners
@@ -136,4 +136,9 @@ select count(banners.b_id) from banners,m2m_banners_pages,pages
 			p_parent is null;
 
 -- 29.
-select m2m_banners_pages.b_id,b_url,count(m2m_banners_pages.b_id) from m2m_banners_pages,banners group by m2m_banners_pages.b_id;
+select * from
+	(select banners.b_id,b_url,count(p_id) as count from banners
+		join m2m_banners_pages on (banners.b_id=m2m_banners_pages.b_id)
+			group by b_id,b_url
+				order by count desc
+	)t limit 1;
