@@ -90,9 +90,11 @@ select b_id,b_url,(b_click/b_show) as rate from banners
 	where b_pic is not null order by (b_click/b_show) desc;
 
 -- 20.
-select n_header,n_dt as date from news,reviews where n_dt in
-	(select min(n_dt) from news) and  
-		r_dt in (select min(r_dt) from reviews);
+select n_header,n_dt as date from news where n_dt in
+	(select min(n_dt) from news)
+		union
+			select r_header,r_dt as date from reviews where r_dt in
+				(select min(r_dt) from reviews) order by date limit 1;
 -- 21.
 select b_url,b_id from banners where b_url in 
 	(select b_url from banners group by b_url having count(b_id) = 1);
@@ -104,6 +106,12 @@ select p_name,count(b_id) from pages,m2m_banners_pages
 			order by count(b_id) desc,p_name;
 
 -- 23.
+select n_header,n_dt as date from news where n_dt in
+	(select max(n_dt) from news)
+		union
+			select r_header,r_dt as date from reviews where r_dt in
+				(select max(r_dt) from reviews);
+
 
 -- 24.
 select b_id,b_url,b_text from banners where concat('http://','',b_text)=b_url; 
@@ -128,7 +136,4 @@ select count(banners.b_id) from banners,m2m_banners_pages,pages
 			p_parent is null;
 
 -- 29.
-        
-select m2m_banners_pages.b_id,b_url,count(m2m_banners_pages.b_id) from m2m_banners_pages,banners
-	where count(m2m_banners_pages.b_id) in
-		(select max(m2m_banners_pages.b_id) from m2m_banners_pages) group by m2m_banners_pages.b_id;
+select m2m_banners_pages.b_id,b_url,count(m2m_banners_pages.b_id) from m2m_banners_pages,banners group by m2m_banners_pages.b_id;
